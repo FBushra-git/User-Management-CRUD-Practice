@@ -1,12 +1,33 @@
+'use client';
+
 import { Button, Table } from '@heroui/react';
 import Link from 'next/link';
-import React from 'react';
+import { useRouter } from 'next/navigation';
 
-const UsersTable = ({users}) => {
-    return (
+const UsersTable = ({ users }) => {
+  const router = useRouter();
+
+  const handleDelete = async (id) => {
+    const confirmDelete = confirm('Are you sure?');
+
+    if (!confirmDelete) return;
+
+    const res = await fetch(`http://localhost:5000/users/${id}`, {
+      method: 'DELETE',
+    });
+
+    const data = await res.json();
+
+    if (data.deletedCount > 0) {
+      alert('Deleted successfully');
+      router.refresh();
+    }
+  };
+
+  return (
     <Table>
       <Table.ScrollContainer>
-        <Table.Content aria-label="Team members" className="min-w-[600px]">
+        <Table.Content aria-label="Users table" className="min-w-[600px]">
           <Table.Header>
             <Table.Column isRowHeader>Name</Table.Column>
             <Table.Column>Email</Table.Column>
@@ -15,28 +36,32 @@ const UsersTable = ({users}) => {
           </Table.Header>
 
           <Table.Body>
-            {
-                users.map(user =>  <Table.Row key={user._id}>
-              <Table.Cell>{user.name}</Table.Cell>
-              <Table.Cell>{user.email}</Table.Cell>
-              <Table.Cell>{user.role}</Table.Cell>
-              <Table.Cell>
-                <Link href = {`/users/${user._id}`}><Button variant="outline">Details</Button></Link>
-                <Link href = {`/users/${user._id}`}><Button variant="outline">Edit</Button></Link>
-                <Button variant="danger">Delete</Button>
-                
-              </Table.Cell>
-            </Table.Row>)
-            }
-           
-           
-            
-        
+            {users.map((user) => (
+              <Table.Row key={user._id}>
+                <Table.Cell>{user.name}</Table.Cell>
+                <Table.Cell>{user.email}</Table.Cell>
+                <Table.Cell>{user.role}</Table.Cell>
+
+                <Table.Cell>
+  <Link href={`/users/${user._id}`}>
+    <Button>Details</Button>
+  </Link>
+
+  <Link href={`/users/${user._id}/edit`}>
+    <Button>Edit</Button>
+  </Link>
+
+  <Button onClick={() => handleDelete(user._id)}>
+    Delete
+  </Button>
+</Table.Cell>
+              </Table.Row>
+            ))}
           </Table.Body>
         </Table.Content>
       </Table.ScrollContainer>
     </Table>
-    );
+  );
 };
 
 export default UsersTable;
